@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Happy+Monkey&display=swap');
+
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+
+body{
+background-color: #1F1F2F;
+color:white;
+font-family: 'Happy Monkey', sans-serif;
+}
