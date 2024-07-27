@@ -1,21 +1,23 @@
-const { createServer } = require("http");
-const { Server } = require("socket.io");
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
-  cors: "http://localhost:5173/",
+  cors: {
+    origin: "http://localhost:5173", // Adjusted CORS configuration
+  },
 });
 
 const allUsers = {};
 const allRooms = [];
 
-io.on("connection", (socket) => {
+io.on('connection', (socket) => {
   allUsers[socket.id] = {
     socket: socket,
     online: true,
   };
 
-  socket.on("request_to_play", (data) => {
+  socket.on('request_to_play', (data) => {
     const currentUser = allUsers[socket.id];
     currentUser.playerName = data.playerName;
 
@@ -35,33 +37,33 @@ io.on("connection", (socket) => {
         player2: currentUser,
       });
 
-      currentUser.socket.emit("OpponentFound", {
+      currentUser.socket.emit('OpponentFound', {
         opponentName: opponentPlayer.playerName,
-        playingAs: "circle",
+        playingAs: 'circle',
       });
 
-      opponentPlayer.socket.emit("OpponentFound", {
+      opponentPlayer.socket.emit('OpponentFound', {
         opponentName: currentUser.playerName,
-        playingAs: "cross",
+        playingAs: 'cross',
       });
 
-      currentUser.socket.on("playerMoveFromClient", (data) => {
-        opponentPlayer.socket.emit("playerMoveFromServer", {
+      currentUser.socket.on('playerMoveFromClient', (data) => {
+        opponentPlayer.socket.emit('playerMoveFromServer', {
           ...data,
         });
       });
 
-      opponentPlayer.socket.on("playerMoveFromClient", (data) => {
-        currentUser.socket.emit("playerMoveFromServer", {
+      opponentPlayer.socket.on('playerMoveFromClient', (data) => {
+        currentUser.socket.emit('playerMoveFromServer', {
           ...data,
         });
       });
     } else {
-      currentUser.socket.emit("OpponentNotFound");
+      currentUser.socket.emit('OpponentNotFound');
     }
   });
 
-  socket.on("disconnect", function () {
+  socket.on('disconnect', () => {
     const currentUser = allUsers[socket.id];
     currentUser.online = false;
     currentUser.playing = false;
@@ -70,16 +72,19 @@ io.on("connection", (socket) => {
       const { player1, player2 } = allRooms[index];
 
       if (player1.socket.id === socket.id) {
-        player2.socket.emit("opponentLeftMatch");
+        player2.socket.emit('opponentLeftMatch');
         break;
       }
 
       if (player2.socket.id === socket.id) {
-        player1.socket.emit("opponentLeftMatch");
+        player1.socket.emit('opponentLeftMatch');
         break;
       }
     }
   });
 });
 
-httpServer.listen(3000);
+httpServer.listen(3000, () => {
+  console.log('Server is listening on port 3000');
+});
+
